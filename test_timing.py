@@ -1,3 +1,5 @@
+# for testing inference speed
+
 import argparse
 import os
 import cv2
