@@ -1,0 +1,11 @@
+config: configs/seg/rellis/b0-lr3-n2.yaml
+path: runtest
+gpu: null
+manual_seed: 0
+resume: false
+fp16: false
+rand_init: trunc_normal@0.02
+last_gamma: 0
+weight_url: ckpts/b0.pt
+auto_restart_thresh: 1.0
+save_freq: 25

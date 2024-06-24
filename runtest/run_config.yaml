@@ -1,0 +1,29 @@
+!!python/object:efficientvit.segcore.trainer.seg_run_config.SegRunConfig
+n_epochs: 1
+base_lr: 0.001
+warmup_epochs: 0
+warmup_lr: 0.0
+lr_schedule_name: cosine
+lr_schedule_param: {}
+optimizer_name: adamw
+optimizer_params:
+  eps: 1.0e-08
+  betas:
+  - 0.9
+  - 0.999
+weight_decay: 0.01
+no_wd_keys:
+- norm
+- bias
+grad_clip: 2.0
+mixup_config:
+  op:
+  - - mixup
+    - 0.1
+    - 1.0
+  - - cutmix
+    - 0.1
+    - 1.0
+init_lr: 0.001
+global_step: 0
+batch_per_epoch: 1

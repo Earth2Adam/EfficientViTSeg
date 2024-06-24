@@ -1,0 +1,13 @@
+data_provider:
+  data_aug:
+    name: randaug
+    n: 2
+    m: 9
+
+net_config:
+  name: b0
+  dropout: 0
+  
+run_config:
+  weight_decay: 0.1
+  base_lr: 0.001
