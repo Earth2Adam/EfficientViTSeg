@@ -129,7 +129,7 @@ class RellisDataset(Dataset):
         
         feed_dict["data"] = self.transform(feed_dict["data"])
         
-        # EfficientViT only works with data divisible by 64 in dimension, so 1200 is padded to 1216
+        # EfficientViT only works with data size divisible by 64, so image size 1200x1920 is padded to 1216x1920
         feed_dict["data"] = pad(feed_dict["data"] , (0, 0, 8, 8), mode='constant', value=0)
 
 

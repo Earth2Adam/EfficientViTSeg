@@ -20,8 +20,7 @@ __all__ = ["RellisDataProvider"]
 
 
 class RellisDataProvider(CityBaseDataProvider):
-    name = "cityscapes"  # confusing right? gotta fix this
-
+    name = "rellis" 
     data_dir = '/scratch/apicker/rellis3d-nonfixed'
     n_classes = 19
     def __init__(

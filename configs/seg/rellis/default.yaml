@@ -1,5 +1,5 @@
 data_provider:
-  dataset: cityscapes
+  dataset: rellis
   data_dir: /scratch/apicker/rellis3d-nonfixed
   data_aug:
     name: randaug

@@ -1,7 +1,3 @@
-# EfficientViT: Multi-Scale Linear Attention for High-Resolution Dense Prediction
-# Han Cai, Junyan Li, Muyan Hu, Chuang Gan, Song Han
-# International Conference on Computer Vision (ICCV), 2023
-
 import torch
 import torch.nn as nn
 
@@ -21,7 +17,6 @@ from efficientvit.models.utils import build_kwargs_from_config
 __all__ = [
     "EfficientViTBackbone",
     "efficientvit_backbone_b0",
-    "efficientvit_backbone_b1"
 ]
 
 
@@ -161,12 +156,4 @@ def efficientvit_backbone_b0(**kwargs) -> EfficientViTBackbone:
     return backbone
 
 
-def efficientvit_backbone_b1(**kwargs) -> EfficientViTBackbone:
-    backbone = EfficientViTBackbone(
-        width_list=[16, 32, 64, 128, 256],
-        depth_list=[1, 2, 3, 3, 4],
-        dim=16,
-        **build_kwargs_from_config(kwargs, EfficientViTBackbone),
-    )
-    return backbone
 

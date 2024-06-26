@@ -17,7 +17,6 @@ from efficientvit.models.utils import build_kwargs_from_config
 __all__ = [
     "EfficientViTSeg",
     "efficientvit_seg_b0",
-    "efficientvit_seg_b1"
 ]
 
 
@@ -118,51 +117,13 @@ def efficientvit_seg_b0(dataset: str, **kwargs) -> EfficientViTSeg:
             **build_kwargs_from_config(kwargs, SegHead),
         )
         
+    # could add in changes for rellis. right now not necessary
     elif dataset == 'rellis':
         pass
-        # TODO: needs implementing
-    else:
-        print(f'dataset: {dataset}')
-        raise NotImplementedError
-    model = EfficientViTSeg(backbone, head)
-    return model
-
-
-def efficientvit_seg_b1(dataset: str, **kwargs) -> EfficientViTSeg:
-    from efficientvit.models.efficientvit.backbone import efficientvit_backbone_b1
-
-    backbone = efficientvit_backbone_b1(**kwargs)
-
-    if dataset == "cityscapes":
-        head = SegHead(
-            fid_list=["stage4", "stage3", "stage2"],
-            in_channel_list=[256, 128, 64],
-            stride_list=[32, 16, 8],
-            head_stride=8,
-            head_width=64,
-            head_depth=3,
-            expand_ratio=4,
-            middle_op="mbconv",
-            final_expand=4,
-            n_classes=19,
-            **build_kwargs_from_config(kwargs, SegHead),
-        )
-    elif dataset == 'rellis':
-        head = SegHead(
-            fid_list=["stage4", "stage3", "stage2"],
-            in_channel_list=[256, 128, 64],
-            stride_list=[32, 16, 8],
-            head_stride=8,
-            head_width=64,
-            head_depth=3,
-            expand_ratio=4,
-            middle_op="mbconv",
-            final_expand=4,
-            n_classes=19,
-            **build_kwargs_from_config(kwargs, SegHead),
-        )
     else:
         raise NotImplementedError
     model = EfficientViTSeg(backbone, head)
     return model
+
+
 
