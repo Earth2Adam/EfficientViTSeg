@@ -1,1 +1,0 @@
-/home/apicker/vit/efficientvit/runtest/checkpoint/model_best_1.pt
