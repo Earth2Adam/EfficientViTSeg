@@ -19,6 +19,8 @@ parser.add_argument("--gpu", type=str, default=None)  # used in single machine e
 parser.add_argument("--manual_seed", type=int, default=0)
 parser.add_argument("--resume", action="store_true")
 parser.add_argument("--fp16", action="store_true")
+parser.add_argument("--dataset", type=str, default="rellis", choices=["cityscapes", "rellis"])
+
 
 # initialization
 parser.add_argument("--rand_init", type=str, default="trunc_normal@0.02")
@@ -54,7 +56,12 @@ def main():
         
     
     # setup data provider
-    data_provider = setup.setup_data_provider(config, [RellisDataProvider], is_distributed=False)
+    if dataset == "rellis":
+        data_provider = setup.setup_data_provider(config, [RellisDataProvider], is_distributed=False)
+        
+    if dataset == "cityscapes":
+        data_provider = setup.setup_data_provider(config, [CityscapesDataProvider], is_distributed=False)
+        
 
     
 
@@ -64,7 +71,7 @@ def main():
 
         
     # setup 
-    model = create_seg_model(config["net_config"]["name"], "cityscapes", dropout=config["net_config"]["dropout"], weight_url=args.weight_url)
+    model = create_seg_model(config["net_config"]["name"], dataset, dropout=config["net_config"]["dropout"], weight_url=args.weight_url)
     apply_drop_func(model.backbone.stages, config["backbone_drop"])
 
     if torch.cuda.device_count() > 1:
@@ -72,7 +79,6 @@ def main():
         
 
 
-    
     # setup trainer
     trainer = SegTrainer(
         path=args.path,
