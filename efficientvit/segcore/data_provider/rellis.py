@@ -20,7 +20,7 @@ __all__ = ["RellisDataProvider"]
 
 
 class RellisDataProvider(CityBaseDataProvider):
-    name = "cityscapes"
+    name = "cityscapes"  # confusing right? gotta fix this
 
     data_dir = '/scratch/apicker/rellis3d-nonfixed'
     n_classes = 19
@@ -46,10 +46,11 @@ class RellisDataProvider(CityBaseDataProvider):
         return transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize(**self.mean_std),  #ImageNet means and Stds are stored in self.mean_std
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), #ImageNet means and Stds
             ]
         )
 
+    
     def build_train_transform(self):
 
         # originally, was testing with different types of random transforms. however, below section incorporates all these random transforms
@@ -59,7 +60,7 @@ class RellisDataProvider(CityBaseDataProvider):
             #transforms.RandomHorizontalFlip(),
         ]
 
-        # random data transforms
+        # random data transforms. pulls from config file to determine types/magnitude of transforms
         post_aug = []
         
         if self.data_aug is not None:
@@ -91,15 +92,11 @@ class RellisDataProvider(CityBaseDataProvider):
         valid_transform = self.build_valid_transform()
 
 
-        train_dataset = RellisDataset(os.path.join(self.data_dir,'train'))
-        test_dataset = RellisDataset(os.path.join(self.data_dir,'test'))
+        train_dataset = RellisDataset(os.path.join(self.data_dir,'train'), transform=train_transform)
+        test_dataset = RellisDataset(os.path.join(self.data_dir,'test'), transform=valid_transform)
         
         
-        
-        # this is IMPORTANT!!
-        train_dataset.transform = train_transform
-        test_dataset.transform = valid_transform
-
+        # don't have a seperate val dataset for rellis specifically
         val_dataset = test_dataset
 
         return train_dataset, val_dataset, test_dataset

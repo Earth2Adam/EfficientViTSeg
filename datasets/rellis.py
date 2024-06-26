@@ -51,7 +51,6 @@ class RellisDataset(Dataset):
     )
     
 
-    
     label_map = np.array(
         (
             0, # void 0
@@ -92,7 +91,7 @@ class RellisDataset(Dataset):
         )
     )
 
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, transform=None):
         super().__init__()
 
         # load samples
@@ -112,12 +111,7 @@ class RellisDataset(Dataset):
                 samples.append((image_path, mask_path))
         self.samples = samples
 
-        # build transform
-        self.transform = transforms.Compose(
-            [
-                transforms.ToTensor(), # kinda just a placeholder for data_provider override
-            ]
-        )
+        self.transform = transform
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -134,6 +128,8 @@ class RellisDataset(Dataset):
         }
         
         feed_dict["data"] = self.transform(feed_dict["data"])
+        
+        # EfficientViT only works with data divisible by 64 in dimension, so 1200 is padded to 1216
         feed_dict["data"] = pad(feed_dict["data"] , (0, 0, 8, 8), mode='constant', value=0)
 
 

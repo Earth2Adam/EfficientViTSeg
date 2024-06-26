@@ -13,14 +13,7 @@ from torchvision import transforms
 from tqdm import tqdm
 
 
-# LOCAL IMPORTS
-def build_valid_transform():
-    return transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
+
 
 from efficientvit.apps.utils import AverageMeter
 from efficientvit.models.utils import resize
@@ -104,11 +97,17 @@ def main():
 
     args = parser.parse_args()
 
+    
+    valid_transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
     if args.dataset == "cityscapes":
         dataset = CityscapesDataset(args.path, (args.crop_size, args.crop_size * 2))
     elif args.dataset == "rellis":
-        dataset = RellisDataset(args.path)
-        dataset.transform = build_valid_transform()
+        dataset = RellisDataset(args.path, transform=valid_transform)
     else:
         raise NotImplementedError
         
@@ -123,14 +122,8 @@ def main():
     
     print(f'len of dataset: {len(dataset)}')
     print(f'Length of dataloader: {len(data_loader)}')
-    data = next(iter(data_loader))
-    print(data['data'])
-    print(f'data size: {data["data"].shape}')
-    quit()
 
     model = create_seg_model(args.model, args.dataset, weight_url=args.weight_url)
-
-
     model = torch.nn.DataParallel(model).cuda()
     model.eval()
 
