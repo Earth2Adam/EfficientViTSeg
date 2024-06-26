@@ -10,45 +10,12 @@ from tqdm import tqdm
 
 from efficientvit.apps.trainer import Trainer
 from efficientvit.apps.utils import AverageMeter
-from efficientvit.segcore.trainer.utils import accuracy, apply_mixup, label_smooth, eval_IOU
+from efficientvit.segcore.trainer.utils import accuracy, apply_mixup, label_smooth, eval_IoU
 from efficientvit.models.utils import list_join, list_mean, torch_random_choices
 #from efficientvit.models.loss import BoundaryAwareFocalLoss
 __all__ = ["SegTrainer"]
 
-class SegIOU:
-    def __init__(self, num_classes: int, ignore_index: int = -1) -> None:
-        self.num_classes = num_classes
-        self.ignore_index = ignore_index
 
-    def __call__(self, outputs: torch.Tensor, targets: torch.Tensor) -> dict[str, torch.Tensor]:
-        outputs = (outputs + 1) * (targets != self.ignore_index)
-        targets = (targets + 1) * (targets != self.ignore_index)
-        intersections = outputs * (outputs == targets)
-
-        outputs = torch.histc(
-            outputs,
-            bins=self.num_classes,
-            min=1,
-            max=self.num_classes,
-        )
-        targets = torch.histc(
-            targets,
-            bins=self.num_classes,
-            min=1,
-            max=self.num_classes,
-        )
-        intersections = torch.histc(
-            intersections,
-            bins=self.num_classes,
-            min=1,
-            max=self.num_classes,
-        )
-        unions = outputs + targets - intersections
-
-        return {
-            "i": intersections,
-            "u": unions,
-        }
 
 
 class SegTrainer(Trainer):
@@ -65,7 +32,6 @@ class SegTrainer(Trainer):
         )
         
         
-        #new 
         self.best_mIoU = 0.0
 
     def _validate(self, model, data_loader, epoch) -> dict[str, any]:
@@ -194,7 +160,7 @@ class SegTrainer(Trainer):
             #val_loss = self._validate(self.model, self.data_provider.valid, epoch=epoch)
  
             # start IOU section 
-            val_mIoU = eval_IOU(self.model, self.data_provider.valid)
+            val_mIoU = eval_IoU(self.model, self.data_provider.valid)
             
             is_best = val_mIoU > self.best_mIoU
             self.best_val = min(val_mIoU, self.best_mIoU)

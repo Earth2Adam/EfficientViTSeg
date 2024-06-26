@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 
 
-from efficientvit.apps.utils import AverageMeter
+from efficientvit.apps.utils import AverageMeter, SegIoU
 from efficientvit.models.utils import resize
 
 from efficientvit.seg_model_zoo import create_seg_model
@@ -26,42 +26,6 @@ from datasets.rellis import RellisDataset
 from datasets.cityscapes import CityscapesDataset
 
 
-
-
-class SegIOU:
-    def __init__(self, num_classes: int, ignore_index: int = -1) -> None:
-        self.num_classes = num_classes
-        self.ignore_index = ignore_index
-
-    def __call__(self, outputs: torch.Tensor, targets: torch.Tensor) -> dict[str, torch.Tensor]:
-        outputs = (outputs + 1) * (targets != self.ignore_index)
-        targets = (targets + 1) * (targets != self.ignore_index)
-        intersections = outputs * (outputs == targets)
-
-        outputs = torch.histc(
-            outputs,
-            bins=self.num_classes,
-            min=1,
-            max=self.num_classes,
-        )
-        targets = torch.histc(
-            targets,
-            bins=self.num_classes,
-            min=1,
-            max=self.num_classes,
-        )
-        intersections = torch.histc(
-            intersections,
-            bins=self.num_classes,
-            min=1,
-            max=self.num_classes,
-        )
-        unions = outputs + targets - intersections
-
-        return {
-            "i": intersections,
-            "u": unions,
-        }
 
 
 def get_canvas(
