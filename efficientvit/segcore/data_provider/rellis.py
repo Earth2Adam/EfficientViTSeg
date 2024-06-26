@@ -46,19 +46,20 @@ class RellisDataProvider(CityBaseDataProvider):
         return transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize(**self.mean_std),
+                transforms.Normalize(**self.mean_std),  #ImageNet means and Stds are stored in self.mean_std
             ]
         )
 
     def build_train_transform(self):
 
+        # originally, was testing with different types of random transforms. however, below section incorporates all these random transforms
         train_transforms = [
            # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1),
             #transforms.RandomErasing(p=0.1, scale=(0.02, 0.33), ratio=(0.3, 3.3), value='random'),
             #transforms.RandomHorizontalFlip(),
         ]
 
-        # data augmentation
+        # random data transforms
         post_aug = []
         
         if self.data_aug is not None:
@@ -76,6 +77,7 @@ class RellisDataProvider(CityBaseDataProvider):
                 if data_aug is not None:
                     train_transforms.append(data_aug)
         
+        # final transform composition
         train_transforms = [
             *train_transforms,
             transforms.ToTensor(),

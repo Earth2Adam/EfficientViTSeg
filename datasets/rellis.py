@@ -8,7 +8,6 @@ import pathlib
 import numpy as np
 from PIL import Image
 import glob
-import cv2
 import math
 import random
 import torch
@@ -22,59 +21,6 @@ from efficientvit.models.utils import resize
 
 
 
-
-class Resize(object):
-    def __init__(
-        self,
-        crop_size: tuple[int, int] or None,
-        interpolation: int or None = cv2.INTER_CUBIC,
-    ):
-        self.crop_size = crop_size
-        self.interpolation = interpolation
-
-    def __call__(self, feed_dict: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
-        if self.crop_size is None or self.interpolation is None:
-            return feed_dict
-
-        image, target = feed_dict["data"], feed_dict["label"]
-        height, width = self.crop_size
-
-        h, w, _ = image.shape
-        if width != w or height != h:
-            image = cv2.resize(
-                image,
-                dsize=(width, height),
-                interpolation=self.interpolation,
-            )
-        return {
-            "data": image,
-            "label": target,
-        }
-
-    
-class ToTensor(object):
-    def __init__(self, mean, std, inplace=False):
-        self.mean = mean
-        self.std = std
-        self.inplace = inplace
-
-    def __call__(self, feed_dict: dict[str, np.ndarray]) -> dict[str, torch.Tensor]:
-        image, mask = feed_dict["data"], feed_dict["label"]
-        image = image.transpose((2, 0, 1))  # (H, W, C) -> (C, H, W)
-        image = torch.as_tensor(image, dtype=torch.float32).div(255.0)
-        mask = torch.as_tensor(mask, dtype=torch.int64)
-        image = F.normalize(image, self.mean, self.std, self.inplace)
-        # Pad the tensor
-        # The pad argument is in the form (pad_left, pad_right, pad_top, pad_bottom)
-        image = pad(image, (0, 0, 8, 8), mode='constant', value=0)
-
-
-        return {
-            "data": image,
-            "label": mask,
-        }
-
-    
 
 class RellisDataset(Dataset):
     classes = (
@@ -104,34 +50,8 @@ class RellisDataset(Dataset):
         (110, 22, 138) # rubble
     )
     
-    '''
-    # this can be changed if we go back to the original, non-fixed dataset, which may be nice.
-    label_map = np.array(
-        (
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-        )
-    )
-    '''
+
     
-    # for use with the original, non-fixed dataset
     label_map = np.array(
         (
             0, # void 0

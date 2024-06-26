@@ -92,8 +92,8 @@ def get_canvas(
 def main():
     parser = argparse.ArgumentParser()    
     
-   # parser.add_argument("--path", type=str, default="/scratch/apicker/cityscapes/leftImg8bit/val")
-    parser.add_argument("--path", type=str, default="/scratch/apicker/rellis3d-nonfixed/test") 
+   # parser.add_argument("--path", type=str, default="/scratch/apicker/cityscapes/leftImg8bit/val")   my cityscapes default image path
+    parser.add_argument("--path", type=str, default="/scratch/apicker/rellis3d-nonfixed/test")  # my rellis default image path
     parser.add_argument("--dataset", type=str, default="rellis", choices=["cityscapes", "rellis"])
     parser.add_argument("--batch_size", help="batch size per gpu", type=int, default=1)
     parser.add_argument("-j", "--workers", help="number of workers", type=int, default=4)
@@ -106,14 +106,12 @@ def main():
 
     if args.dataset == "cityscapes":
         dataset = CityscapesDataset(args.path, (args.crop_size, args.crop_size * 2))
-        print(f'len of dataset: {len(dataset)}')
     elif args.dataset == "rellis":
         dataset = RellisDataset(args.path)
         dataset.transform = build_valid_transform()
-        print(f'len of dataset: {len(dataset)}')
-        
     else:
         raise NotImplementedError
+        
     data_loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -123,15 +121,15 @@ def main():
         drop_last=False,
     )
     
+    print(f'len of dataset: {len(dataset)}')
     print(f'Length of dataloader: {len(data_loader)}')
+    data = next(iter(data_loader))
+    print(data['data'])
+    print(f'data size: {data["data"].shape}')
+    quit()
 
     model = create_seg_model(args.model, args.dataset, weight_url=args.weight_url)
-       # for name, layer in model.named_modules():
-     #   print(name, layer)
-        
-    print('weight layer data')
-   # print(model.head.input_ops[0].op_list[0].conv.weight.data)
-   # quit()
+
 
     model = torch.nn.DataParallel(model).cuda()
     model.eval()
@@ -143,7 +141,6 @@ def main():
     union = AverageMeter()
     iou = SegIOU(len(dataset.classes))
 
-    num = 1
     with torch.inference_mode():
         with tqdm(total=len(data_loader), desc=f"Eval {args.model} on {args.dataset}") as t:
             for feed_dict in data_loader:
@@ -151,13 +148,11 @@ def main():
                 
                 # compute output
                 output = model(images)
+                
                 # resize the output to match the shape of the mask
                 if output.shape[-2:] != mask.shape[-2:]:
                     output = resize(output, size=mask.shape[-2:])
                 output = torch.argmax(output, dim=1)
-                if num == 1:
-                    print(f'size of i,m,o (after argmax and upsample) {images.shape} {mask.shape} {output.shape}')
-                    num = 0
                 stats = iou(output, mask)
                 
                 interaction.update(stats["i"])

@@ -55,9 +55,7 @@ def main():
     
     # setup data provider
     data_provider = setup.setup_data_provider(config, [RellisDataProvider], is_distributed=False)
-    print('dps')
-    print(len(data_provider.train))
-    print(len(data_provider.test))
+
     
 
     # setup run config
@@ -72,7 +70,6 @@ def main():
     if torch.cuda.device_count() > 1:
         print("Using", torch.cuda.device_count(), "GPUs")
         
-
 
 
     
