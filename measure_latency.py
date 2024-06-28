@@ -1,4 +1,4 @@
-# for testing inference speed
+# for testing latency
 
 import argparse
 import os
