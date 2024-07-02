@@ -113,15 +113,8 @@ class SegTrainer(Trainer):
         self.test_criterion = self.train_criterion
         self.best_mIoU = 0.0
         
-        for epoch in range(self.run_config.warumup_epochs):
-            
-            
-            
-            
-        info = f"{self.run_config.warmup_epochs} warmup epochs completed.\n"
-        self.write_log(info, print_log=False)
         
-        for epoch in range(self.start_epoch, self.run_config.n_epochs):
+        for epoch in range(self.start_epoch, self.run_config.n_epochs + self.run_config.warumup_epochs):
             train_info_dict = self.train_one_epoch(epoch)
             
             # eval and save model
@@ -134,7 +127,7 @@ class SegTrainer(Trainer):
                 val_mIoU = eval_IoU(self.model, self.data_provider.valid)
 
                 is_best = val_mIoU > self.best_mIoU
-                self.best_val = min(val_mIoU, self.best_mIoU)
+                self.best_mIoU = min(val_mIoU, self.best_mIoU)
 
                 self.save_model(
                     only_state_dict=True,

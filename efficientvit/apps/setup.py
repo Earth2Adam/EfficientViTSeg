@@ -3,9 +3,7 @@ import time
 from copy import deepcopy
 
 import torch.backends.cudnn
-import torch.distributed
 import torch.nn as nn
-from torchpack import distributed as dist
 
 from efficientvit.apps.data_provider import DataProvider
 from efficientvit.apps.trainer.run_config import RunConfig
@@ -23,8 +21,6 @@ __all__ = [
 
 
 def save_exp_config(exp_config: dict, path: str, name="config.yaml") -> None:
-    if not dist.is_master():
-        return
     dump_config(exp_config, os.path.join(path, name))
 
 
@@ -33,7 +29,7 @@ def save_exp_config(exp_config: dict, path: str, name="config.yaml") -> None:
 def setup_seed(manual_seed: int, resume: bool) -> None:
     if resume:
         manual_seed = int(time.time())
-    manual_seed = dist.rank() + manual_seed
+
     torch.manual_seed(manual_seed)
     torch.cuda.manual_seed_all(manual_seed)
 
@@ -65,11 +61,8 @@ def setup_exp_config(config_path: str, recursive=True, opt_args: dict or None = 
 
 
 def setup_data_provider(
-    exp_config: dict, data_provider_classes: list[type[DataProvider]], is_distributed: bool = True
-) -> DataProvider:
+    exp_config: dict, data_provider_classes: list[type[DataProvider]]) -> DataProvider:
     dp_config = exp_config["data_provider"]
-    dp_config["num_replicas"] = dist.size() if is_distributed else None
-    dp_config["rank"] = dist.rank() if is_distributed else None
     dp_config["test_batch_size"] = dp_config.get("test_batch_size", None) or dp_config["base_batch_size"] * 2
     dp_config["batch_size"] = dp_config["train_batch_size"] = dp_config["base_batch_size"]
 
@@ -84,7 +77,7 @@ def setup_data_provider(
 
 
 def setup_run_config(exp_config: dict, run_config_cls: type[RunConfig]) -> RunConfig:
-    exp_config["run_config"]["init_lr"] = exp_config["run_config"]["base_lr"] #* dist.size()
+    exp_config["run_config"]["init_lr"] = exp_config["run_config"]["base_lr"]
 
     run_config = run_config_cls(**exp_config["run_config"])
 

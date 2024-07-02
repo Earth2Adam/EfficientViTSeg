@@ -25,8 +25,8 @@ class Trainer:
         for path in [self.path, self.checkpoint_path, self.logs_path]:
             os.makedirs(path, exist_ok=True)
 
-        self.best_val = 0.0
         self.start_epoch = 0
+        self.best_mIoU = 0.0
 
     @property
     def network(self) -> nn.Module:
@@ -64,7 +64,7 @@ class Trainer:
                 checkpoint = {
                     "state_dict": self.network.state_dict(),
                     "epoch": epoch,
-                    "best_val": self.best_val,
+                    "best_mIoU": self.best_mIoU,
                     "optimizer": self.optimizer.state_dict(),
                     "lr_scheduler": self.lr_scheduler.state_dict(),
                     "ema": self.ema.state_dict() if self.ema is not None else None,
@@ -106,9 +106,9 @@ class Trainer:
             self.start_epoch = checkpoint["epoch"] + 1
             self.run_config.update_global_step(self.start_epoch)
             log.append(f"epoch={self.start_epoch - 1}")
-        if "best_val" in checkpoint:
-            self.best_val = checkpoint["best_val"]
-            log.append(f"best_val={self.best_val:.2f}")
+        if "best_mIoU" in checkpoint:
+            self.best_mIoU = checkpoint["best_mIoU"]
+            log.append(f"best_mIoU={self.best_mIoU:.2f}")
         if "optimizer" in checkpoint:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
             log.append("optimizer")
