@@ -12,7 +12,6 @@ from efficientvit.apps.trainer import Trainer
 from efficientvit.apps.utils import AverageMeter
 from efficientvit.segcore.trainer.utils import accuracy, apply_mixup, label_smooth, eval_IoU
 from efficientvit.models.utils import list_join, list_mean, torch_random_choices
-#from efficientvit.models.loss import BoundaryAwareFocalLoss
 __all__ = ["SegTrainer"]
 
 
@@ -149,7 +148,6 @@ class SegTrainer(Trainer):
     def train(self, trials=0, save_freq=1) -> None:
 
         self.train_criterion = nn.CrossEntropyLoss(ignore_index=-1)
-        #self.train_criterion = BoundaryAwareFocalLoss(gamma=0.5, ignore_id=-1)
         self.test_criterion = self.train_criterion
         
         
@@ -167,15 +165,12 @@ class SegTrainer(Trainer):
 
 
             # log
-            #info = f"Epoch {epoch+1} train loss {train_info_dict['train_loss']:.3f} val loss {val_loss:.3f} val_mIoU {val_mIoU:.2f}%"
-            info = f"Epoch {epoch+1} val_mIoU {val_mIoU:.2f}%"
+            info = f"Epoch {epoch+1} train loss {train_info_dict['train_loss']:.3f} val loss {val_loss:.3f} val_mIoU {val_mIoU:.2f}%"
 
             self.write_log(info, print_log=True)
-            print(self.model.head.input_ops[0].op_list[0].conv.weight.data)
             
             # save model
-            #if (epoch + 1) % save_freq == 0: #or is_best:
-            if True:
+            if (epoch + 1) % save_freq == 0: #or is_best:
                 self.save_model(
                     only_state_dict=True,
                     epoch=epoch,

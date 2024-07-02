@@ -96,7 +96,7 @@ def main():
 
     interaction = AverageMeter()
     union = AverageMeter()
-    iou = SegIOU(len(dataset.classes))
+    iou = SegIoU(len(dataset.classes))
 
     with torch.inference_mode():
         with tqdm(total=len(data_loader), desc=f"Eval {args.model} on {args.dataset}") as t:
@@ -138,7 +138,7 @@ def main():
     print(f"mIoU = {mIoU:.3f}")
     print("Class IoUs:")
     for i, class_iou in enumerate(class_IoUs):
-        print(f"Class {i}: {class_iou:.3f}")
+        print(f"Class {i}: {class_iou:.2f}")
 
 if __name__ == "__main__":
     main()

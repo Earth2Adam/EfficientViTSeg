@@ -20,7 +20,7 @@ def print_model_size(model):
 
 
 
-def measure_inference_time(model, input_tensor, num_warmup=5, num_runs=50):
+def measure_inference_time(model, input_tensor, num_warmup=20, num_runs=50):
     """
     Measures the inference time of a PyTorch model using CUDA events.
 
@@ -81,10 +81,10 @@ def measure_inference_time(model, input_tensor, num_warmup=5, num_runs=50):
 
 def main():
 
-    
 
     model = create_seg_model('b0', 'cityscapes', weight_url=None)
-    model = nn.DataParallel(model)
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
     print_model_size(model)
     pytorch_total_params = sum(p.numel() for p in model.parameters())
     print(f'{pytorch_total_params} params')    
@@ -93,6 +93,7 @@ def main():
 
     
     nums = [1, 2, 4, 8, 16]
+    nums = [1]
     for num in nums:
         input_tensor = torch.randn(num, 3, 1216, 1920)  # Example input tensor
         print(f'\nbatch size {num}')
