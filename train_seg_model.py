@@ -28,7 +28,7 @@ parser.add_argument("--last_gamma", type=float, default=0)
 parser.add_argument("--weight_url", type=str, help="ckpt directory")
 
 parser.add_argument("--auto_restart_thresh", type=float, default=1.0)
-parser.add_argument("--save_freq", type=int, default=25)
+parser.add_argument("--eval_save_freq", type=int, default=25)
 
 
 def main():
@@ -98,7 +98,7 @@ def main():
 
 
     # launch training
-    trainer.train(save_freq=args.save_freq)
+    trainer.train(eval_save_freq=args.eval_save_freq)
 
 
 if __name__ == "__main__":

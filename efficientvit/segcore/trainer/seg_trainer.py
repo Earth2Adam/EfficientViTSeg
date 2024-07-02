@@ -31,38 +31,25 @@ class SegTrainer(Trainer):
         )
         
         
-        self.best_mIoU = 0.0
 
-    def _validate(self, model, data_loader, epoch) -> dict[str, any]:
+    def _validate(self, model, data_loader, epoch):
         val_loss = AverageMeter()
 
         with torch.no_grad():
-            with tqdm(
-                total=len(data_loader),
-                desc=f"Validate Epoch #{epoch + 1}",
-                disable=not dist.is_master(),
-                file=sys.stdout,
-            ) as t:
-                for feed_dict in data_loader:
-                    images = feed_dict["data"]
-                    masks = feed_dict["label"]
-                    
-                    images, masks = images.cuda(), masks.cuda()
-                    
-                    # compute output
-                    output = model(images)
-                    if output.shape[-2:] != masks.shape[-2:]:
-                        output = resize(output, size=masks.shape[-2:])
-                    
-                    loss = self.test_criterion(output, masks)
-                    val_loss.update(loss, images.shape[0])
+            for feed_dict in data_loader:
+                images = feed_dict["data"]
+                masks = feed_dict["label"]
 
-                    t.set_postfix(
-                        {
-                            "loss": val_loss.avg,
-                        }
-                    )
-                    t.update()
+                images, masks = images.cuda(), masks.cuda()
+
+                # compute output
+                output = model(images)
+                if output.shape[-2:] != masks.shape[-2:]:
+                    output = resize(output, size=masks.shape[-2:])
+
+                loss = self.test_criterion(output, masks)
+                val_loss.update(loss, images.shape[0])
+
         return val_loss.avg
  
 
@@ -89,90 +76,77 @@ class SegTrainer(Trainer):
                  
         self.scaler.scale(loss).backward()
 
-        '''
-        # calc train top1 acc
-        if self.run_config.mixup_config is None:
-            top1 = accuracy(output, torch.argmax(masks, dim=1), topk=(1,))[0][0]
-        else:
-        
-            top1 = None
-        '''
 
         return {
             "loss": loss,
-            #"top1": top1,
         }
 
     def _train_one_epoch(self, epoch: int) -> dict[str, any]:
         train_loss = AverageMeter()
         self.model.train()
-        with tqdm(
-            total=len(self.data_provider.train),
-            desc="Train Epoch #{}".format(epoch + 1),
-            file=sys.stdout,
-        ) as t:
-            for feed_dict in self.data_provider.train:
-                
-                # preprocessing
-                feed_dict = self.before_step(feed_dict)
-                
-                # clear gradient
-                self.optimizer.zero_grad()
-                
-                # forward & backward
-                output_dict = self.run_step(feed_dict)
-                
-                # update: optimizer, lr_scheduler
-                self.after_step()
 
-                # update train metrics
-                train_loss.update(output_dict["loss"], 1024)
-      
-                # tqdm
-                postfix_dict = {
-                    "loss": train_loss.avg,
-                    "bs": 4,
-                    "lr": list_join(
-                        sorted(set([group["lr"] for group in self.optimizer.param_groups])),
-                        "#",
-                        "%.1E",
-                    ),
-                    "progress": self.run_config.progress,
-                }
-                t.set_postfix(postfix_dict)
-                t.update()
+        for feed_dict in self.data_provider.train:
+
+            # preprocessing
+            feed_dict = self.before_step(feed_dict)
+
+            # clear gradient
+            self.optimizer.zero_grad()
+
+            # forward & backward
+            output_dict = self.run_step(feed_dict)
+
+            # update: optimizer, lr_scheduler
+            self.after_step()
+
+            # update train metrics
+            train_loss.update(output_dict["loss"], 1024)
+
+
         return {
             "train_loss": train_loss.avg,
         }
 
-    def train(self, trials=0, save_freq=1) -> None:
+    def train(self, eval_save_freq=25) -> None:
 
         self.train_criterion = nn.CrossEntropyLoss(ignore_index=-1)
         self.test_criterion = self.train_criterion
+        self.best_mIoU = 0.0
         
+        for epoch in range(self.run_config.warumup_epochs):
+            
+            
+            
+            
+        info = f"{self.run_config.warmup_epochs} warmup epochs completed.\n"
+        self.write_log(info, print_log=False)
         
-        for epoch in range(self.start_epoch, self.run_config.n_epochs + self.run_config.warmup_epochs):
+        for epoch in range(self.start_epoch, self.run_config.n_epochs):
             train_info_dict = self.train_one_epoch(epoch)
             
-            # eval
-            #val_loss = self._validate(self.model, self.data_provider.valid, epoch=epoch)
- 
-            # start IOU section 
-            val_mIoU = eval_IoU(self.model, self.data_provider.valid)
-            
-            is_best = val_mIoU > self.best_mIoU
-            self.best_val = min(val_mIoU, self.best_mIoU)
+            # eval and save model
+            if (epoch + 1) % eval_save_freq == 0:
 
+                # eval
+                val_loss = self._validate(self.model, self.data_provider.valid, epoch=epoch)
 
-            # log
-            info = f"Epoch {epoch+1} train loss {train_info_dict['train_loss']:.3f} val loss {val_loss:.3f} val_mIoU {val_mIoU:.2f}%"
+                # start IOU section 
+                val_mIoU = eval_IoU(self.model, self.data_provider.valid)
 
-            self.write_log(info, print_log=True)
-            
-            # save model
-            if (epoch + 1) % save_freq == 0: #or is_best:
+                is_best = val_mIoU > self.best_mIoU
+                self.best_val = min(val_mIoU, self.best_mIoU)
+
                 self.save_model(
                     only_state_dict=True,
                     epoch=epoch,
                     model_name=f"model_best_{epoch+1}.pt" if is_best else f"checkpoint{epoch+1}.pt",
                 )
+                
+                info = f"Epoch {epoch+1} train loss {train_info_dict['train_loss']:.3f} val loss {val_loss:.3f} val_mIoU {val_mIoU:.2f}%"
+                
+            else:
+                info = f"Epoch {epoch+1} train loss {train_info_dict['train_loss']:.3f}"
+            
+            # log
+            self.write_log(info, print_log=False)
+            

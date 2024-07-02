@@ -161,27 +161,7 @@ class Trainer:
         self.fp16 = fp16
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.fp16)
 
-    def sync_model(self):
-        print("Sync model")
-        self.save_model(model_name="sync.pt")
-        dist.barrier()
-        checkpoint = torch.load(os.path.join(self.checkpoint_path, "sync.pt"), map_location="cpu")
-        dist.barrier()
-        if dist.is_master():
-            os.remove(os.path.join(self.checkpoint_path, "sync.pt"))
-        dist.barrier()
-
-        # load checkpoint
-        self.network.load_state_dict(checkpoint["state_dict"], strict=False)
-        if "optimizer" in checkpoint:
-            self.optimizer.load_state_dict(checkpoint["optimizer"])
-        if "lr_scheduler" in checkpoint:
-            self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
-        if "ema" in checkpoint and self.ema is not None:
-            self.ema.load_state_dict(checkpoint["ema"])
-        if "scaler" in checkpoint and self.fp16:
-            self.scaler.load_state_dict(checkpoint["scaler"])
-
+   
     def before_step(self, feed_dict: dict[str, any]) -> dict[str, any]:
         for key in feed_dict:
             if isinstance(feed_dict[key], torch.Tensor):
