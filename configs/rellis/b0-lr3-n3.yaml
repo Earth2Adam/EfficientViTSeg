@@ -1,8 +1,9 @@
 data_provider:
   data_aug:
-    name: randaug
+    name: randaug erase
     n: 3
     m: 9
+    p: 0.5
   base_batch_size: 8
   n_worker: 8
 

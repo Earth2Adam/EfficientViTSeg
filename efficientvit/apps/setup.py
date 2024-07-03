@@ -25,7 +25,6 @@ def save_exp_config(exp_config: dict, path: str, name="config.yaml") -> None:
 
 
 
-
 def setup_seed(manual_seed: int, resume: bool) -> None:
     if resume:
         manual_seed = int(time.time())
@@ -50,27 +49,33 @@ def setup_exp_config(config_path: str, recursive=True, opt_args: dict or None = 
         fpaths = fpaths[::-1]
 
     default_config = load_config(fpaths[0])
+
     exp_config = deepcopy(default_config)
+    print(f'exp_config: {exp_config}')
     for fpath in fpaths[1:]:
         partial_update_config(exp_config, load_config(fpath))
     # update config via args
     if opt_args is not None:
         partial_update_config(exp_config, opt_args)
+    
+    print(f'opt_args: {opt_args}')
 
     return exp_config
 
 
-def setup_data_provider(
-    exp_config: dict, data_provider_classes: list[type[DataProvider]]) -> DataProvider:
+def setup_data_provider(exp_config, data_provider_class) -> DataProvider:
+    
     dp_config = exp_config["data_provider"]
     dp_config["test_batch_size"] = dp_config.get("test_batch_size", None) or dp_config["base_batch_size"] * 2
     dp_config["batch_size"] = dp_config["train_batch_size"] = dp_config["base_batch_size"]
 
-    data_provider_lookup = {provider.name: provider for provider in data_provider_classes}
-    data_provider_class = data_provider_lookup[dp_config["dataset"]]
-
+    print(dp_config)
     data_provider_kwargs = build_kwargs_from_config(dp_config, data_provider_class)
-    print(data_provider_kwargs)
+    
+    
+    for k,v in data_provider_kwargs.items():
+        print(k, v)
+        
     data_provider = data_provider_class(**data_provider_kwargs)
     
     return data_provider

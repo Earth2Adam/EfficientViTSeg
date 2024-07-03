@@ -55,9 +55,12 @@ def resize(
 def build_kwargs_from_config(config: dict, target_func: callable) -> dict[str, any]:
     valid_keys = list(signature(target_func).parameters)
     kwargs = {}
+    print('\n\n\nkwargs\n\n\n')
+    print(config)
     for key in config:
         if key in valid_keys:
             kwargs[key] = config[key]
+            print(kwargs)
     return kwargs
 
 

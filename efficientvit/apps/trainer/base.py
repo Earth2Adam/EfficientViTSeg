@@ -146,7 +146,8 @@ class Trainer:
 
     def prep_for_training(self, run_config: RunConfig, ema_decay: float or None = None, fp16=False) -> None:
         self.run_config = run_config
-        #self.model = nn.DataParallel(self.model)
+        if torch.cuda.device_count() > 1:
+            self.model = nn.DataParallel(self.model)
         self.model.cuda()
 
         self.run_config.global_step = 0

@@ -8,10 +8,8 @@ from torchvision.datasets import ImageFolder
 
 from efficientvit.apps.data_provider import CityBaseDataProvider
 from efficientvit.apps.data_provider.augment import RandAug
-from efficientvit.apps.data_provider.random_resolution import MyRandomResizedCrop, get_interpolate
 from efficientvit.apps.utils import partial_update_config
 from efficientvit.models.utils import val2list
-
 
 
 from datasets.rellis import RellisDataset
@@ -62,16 +60,17 @@ class RellisDataProvider(CityBaseDataProvider):
         # random data transforms. pulls from config file to determine types/magnitude of transforms
         post_aug = []
         
+
         if self.data_aug is not None:
             for aug_op in val2list(self.data_aug):
-                if aug_op["name"] == "randaug":
+                if "randaug" in aug_op["name"]:
                     data_aug = RandAug(aug_op, mean=self.mean_std["mean"])
-                elif aug_op["name"] == "erase":
+                if "erase" aug_op["name"] in:
                     from timm.data.random_erasing import RandomErasing
 
                     random_erase = RandomErasing(aug_op["p"], device="cpu")
                     post_aug.append(random_erase)
-                    data_aug = None
+                    # data_aug = None testing
                 else:
                     raise NotImplementedError
                 if data_aug is not None:

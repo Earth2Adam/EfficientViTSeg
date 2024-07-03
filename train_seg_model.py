@@ -56,11 +56,11 @@ def main():
         
     
     # setup data provider
-    if dataset == "rellis":
-        data_provider = setup.setup_data_provider(config, [RellisDataProvider], is_distributed=False)
+    if args.dataset == "rellis":
+        data_provider = setup.setup_data_provider(config, RellisDataProvider)
         
-    if dataset == "cityscapes":
-        data_provider = setup.setup_data_provider(config, [CityscapesDataProvider], is_distributed=False)
+    if args.dataset == "cityscapes":
+        data_provider = setup.setup_data_provider(config, CityscapesDataProvider)
         
 
     
