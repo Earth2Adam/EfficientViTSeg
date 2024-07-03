@@ -222,10 +222,10 @@ class CityBaseDataProvider:
 
         # build datasets
         train_dataset, val_dataset, test_dataset = self.build_datasets()
-        print('datasets')
-        print(len(train_dataset))
-        print(len(test_dataset))
-        print(len(val_dataset))
+        print('length of datasets')
+        print(f'train: {len(train_dataset)}')
+        print(f'test {len(test_dataset)}')
+        print(f'val {len(val_dataset)}')
         
         
 
@@ -237,12 +237,7 @@ class CityBaseDataProvider:
         if self.valid is None:
             self.valid = self.test
         self.sub_train = None
-        
-        print('dps')
-        print(len(self.train))
-        print(len(self.test))
-        print(len(self.valid))
-        
+
 
     @property
     def data_shape(self) -> tuple[int, ...]:

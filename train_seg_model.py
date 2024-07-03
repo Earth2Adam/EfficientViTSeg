@@ -71,7 +71,7 @@ def main():
 
         
     # setup 
-    model = create_seg_model(config["net_config"]["name"], dataset, dropout=config["net_config"]["dropout"], weight_url=args.weight_url)
+    model = create_seg_model(config["net_config"]["name"], args.dataset, dropout=config["net_config"]["dropout"], weight_url=args.weight_url)
     apply_drop_func(model.backbone.stages, config["backbone_drop"])
 
     if torch.cuda.device_count() > 1:

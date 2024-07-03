@@ -51,15 +51,12 @@ def setup_exp_config(config_path: str, recursive=True, opt_args: dict or None = 
     default_config = load_config(fpaths[0])
 
     exp_config = deepcopy(default_config)
-    print(f'exp_config: {exp_config}')
     for fpath in fpaths[1:]:
         partial_update_config(exp_config, load_config(fpath))
     # update config via args
     if opt_args is not None:
         partial_update_config(exp_config, opt_args)
     
-    print(f'opt_args: {opt_args}')
-
     return exp_config
 
 
@@ -69,12 +66,8 @@ def setup_data_provider(exp_config, data_provider_class) -> DataProvider:
     dp_config["test_batch_size"] = dp_config.get("test_batch_size", None) or dp_config["base_batch_size"] * 2
     dp_config["batch_size"] = dp_config["train_batch_size"] = dp_config["base_batch_size"]
 
-    print(dp_config)
     data_provider_kwargs = build_kwargs_from_config(dp_config, data_provider_class)
     
-    
-    for k,v in data_provider_kwargs.items():
-        print(k, v)
         
     data_provider = data_provider_class(**data_provider_kwargs)
     

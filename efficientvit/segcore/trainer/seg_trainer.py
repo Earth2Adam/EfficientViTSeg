@@ -114,7 +114,7 @@ class SegTrainer(Trainer):
         self.best_mIoU = 0.0
         
         
-        for epoch in range(self.start_epoch, self.run_config.n_epochs + self.run_config.warumup_epochs):
+        for epoch in range(self.start_epoch, self.run_config.n_epochs + self.run_config.warmup_epochs):
             train_info_dict = self.train_one_epoch(epoch)
             
             # eval and save model
@@ -141,5 +141,5 @@ class SegTrainer(Trainer):
                 info = f"Epoch {epoch+1} train loss {train_info_dict['train_loss']:.3f}"
             
             # log
-            self.write_log(info, print_log=False)
+            self.write_log(info, print_log=True)
             

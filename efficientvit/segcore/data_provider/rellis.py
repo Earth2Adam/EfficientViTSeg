@@ -65,7 +65,7 @@ class RellisDataProvider(CityBaseDataProvider):
             for aug_op in val2list(self.data_aug):
                 if "randaug" in aug_op["name"]:
                     data_aug = RandAug(aug_op, mean=self.mean_std["mean"])
-                if "erase" aug_op["name"] in:
+                if "erase" in aug_op["name"]:
                     from timm.data.random_erasing import RandomErasing
 
                     random_erase = RandomErasing(aug_op["p"], device="cpu")
