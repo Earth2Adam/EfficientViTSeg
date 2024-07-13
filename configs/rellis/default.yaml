@@ -9,9 +9,9 @@ data_provider:
   n_worker: 8
 
 run_config:
-  n_epochs: 3
+  n_epochs: 1
   base_lr: 0.00006
-  warmup_epochs: 20
+  warmup_epochs: 0
   warmup_lr: 0.0
   
   lr_schedule_name: cosine

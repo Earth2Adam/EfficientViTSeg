@@ -20,7 +20,7 @@ def print_model_size(model):
 
 
 
-def measure_inference_time(model, input_tensor, num_warmup=20, num_runs=50):
+def measure_inference_time(model, input_tensor, num_warmup=50, num_runs=200):
     """
     Measures the inference time of a PyTorch model using CUDA events.
 
@@ -30,13 +30,14 @@ def measure_inference_time(model, input_tensor, num_warmup=20, num_runs=50):
     - num_warmup: number of warm-up runs before measurements.
     - num_runs: number of timed runs for averaging inference time.
     """
-    # Ensure model is in evaluation mode and moved to the correct device
+    
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device).eval()
+    model = model.to(device).eval()
     input_tensor = input_tensor.to(device)
 
     # Warm-up runs
-    with torch.no_grad():
+    with torch.inference_mode():
         for _ in range(num_warmup):
             _ = model(input_tensor)
 
@@ -46,15 +47,16 @@ def measure_inference_time(model, input_tensor, num_warmup=20, num_runs=50):
     
     durations = []
     memory_stats = []
-    with torch.no_grad():
+    with torch.inference_mode():
         for _ in range(num_runs):
-            torch.cuda.reset_peak_memory_stats()
+            input_tensor = torch.randn(1, 3, 1216, 1920)  # Example input tensor
             
+            input_tensor = input_tensor.to(device)
             start_event.record()
             outputs = model(input_tensor) 
             outputs = resize(outputs, size=[1200,1920])
             _, pred = torch.max(outputs, 1)
-            pred = pred.byte().cpu()
+           # pred = pred.byte().cpu()
             end_event.record()
 
             # Waits for everything to finish running
@@ -81,6 +83,7 @@ def measure_inference_time(model, input_tensor, num_warmup=20, num_runs=50):
 
 def main():
 
+    print('\n\n begin evit.')
 
     model = create_seg_model('b0', 'cityscapes', weight_url=None)
     if torch.cuda.device_count() > 1:
@@ -95,10 +98,13 @@ def main():
     nums = [1, 2, 4, 8, 16]
     nums = [1]
     for num in nums:
-        input_tensor = torch.randn(num, 3, 1216, 1920)  # Example input tensor
+        input_tensor = torch.randn(num, 3, 1216, 1920)
+
         print(f'\nbatch size {num}')
         measure_inference_time(model, input_tensor)
 
+    print('\n\n end evit.')
+        
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,8 @@ data_provider:
     n: 2
     m: 9
     p: 0.1
-  base_batch_size: 8
+  base_batch_size: 4
+  test_batch_size: 4
   n_worker: 8
 
 net_config:
