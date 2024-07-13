@@ -3,4 +3,4 @@ experiments/
 .ipynb_checkpoints/
 __pycache__/
 gat.txt
-.gitignore
+onnx/

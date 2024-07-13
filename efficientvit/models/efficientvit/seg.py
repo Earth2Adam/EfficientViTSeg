@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from efficientvit.models.efficientvit.backbone import EfficientViTBackbone
 from efficientvit.models.nn import (
@@ -23,9 +24,9 @@ __all__ = [
 class SegHead(DAGBlock):
     def __init__(
         self,
-        fid_list: list[str],
-        in_channel_list: list[int],
-        stride_list: list[int],
+        fid_list,
+        in_channel_list,
+        stride_list,
         head_stride: int,
         head_width: int,
         head_depth: int,
@@ -93,6 +94,9 @@ class EfficientViTSeg(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         feed_dict = self.backbone(x)
         feed_dict = self.head(feed_dict)
+        
+        # add in rellis interpolation
+        feed_dict["segout"] = F.interpolate(feed_dict["segout"], size=[1200, 1920], mode='bicubic', align_corners=False)
 
         return feed_dict["segout"]
 

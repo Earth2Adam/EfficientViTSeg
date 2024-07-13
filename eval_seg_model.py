@@ -107,8 +107,8 @@ def main():
                 output = model(images)
                 
                 # resize the output to match the shape of the mask
-                if output.shape[-2:] != mask.shape[-2:]:
-                    output = resize(output, size=mask.shape[-2:])
+               # if output.shape[-2:] != mask.shape[-2:]:
+                #    output = resize(output, size=mask.shape[-2:])
                 output = torch.argmax(output, dim=1)
                 stats = iou(output, mask)
                 
